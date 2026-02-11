@@ -8,7 +8,7 @@ import {
   Animated,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import Mapbox from '@rnmapbox/maps';
+import MapView, { Marker } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import useTrailStore from '../../store/trailStore';
 import usePoiStore from '../../store/poiStore';
@@ -66,27 +66,28 @@ export default function ExploreScreen() {
 
   return (
     <View style={styles.container}>
-      <Mapbox.MapView
+      <MapView
         style={styles.map}
-        styleURL={Mapbox.StyleURL.Outdoors}
-        attributionEnabled={false}
-        logoEnabled={false}
-        compassEnabled={true}
-        scaleBarEnabled={true}
+        initialRegion={{
+          latitude: 0.0236,
+          longitude: 37.9062,
+          latitudeDelta: 10,
+          longitudeDelta: 10,
+        }}
+        showsUserLocation={true}
+        showsMyLocationButton={true}
+        showsCompass={true}
+        showsScale={true}
       >
-        <Mapbox.Camera
-          centerCoordinate={[37.9062, 0.0236]}
-          zoomLevel={5}
-          animationMode="flyTo"
-        />
-
         {/* App trail markers */}
         {trails.map((trail) => (
-          <Mapbox.PointAnnotation
+          <Marker
             key={`trail-${trail._id}`}
-            id={`trail-${trail._id}`}
-            coordinate={[trail.location.lng, trail.location.lat]}
-            onSelected={() => setSelected({ type: 'trail', data: trail })}
+            coordinate={{
+              latitude: trail.location.lat,
+              longitude: trail.location.lng,
+            }}
+            onPress={() => setSelected({ type: 'trail', data: trail })}
           >
             <View
               style={[
@@ -96,16 +97,18 @@ export default function ExploreScreen() {
             >
               <Ionicons name="trail-sign" size={16} color={COLORS.white} />
             </View>
-          </Mapbox.PointAnnotation>
+          </Marker>
         ))}
 
         {/* OSM nearby trail markers */}
         {showOsmTrails && nearbyOsmTrails.map((trail) => (
-          <Mapbox.PointAnnotation
+          <Marker
             key={`osm-${trail.osm_id}`}
-            id={`osm-${trail.osm_id}`}
-            coordinate={[trail.location.lng, trail.location.lat]}
-            onSelected={() => setSelected({ type: 'osm', data: trail })}
+            coordinate={{
+              latitude: trail.location.lat,
+              longitude: trail.location.lng,
+            }}
+            onPress={() => setSelected({ type: 'osm', data: trail })}
           >
             <View
               style={[
@@ -115,27 +118,26 @@ export default function ExploreScreen() {
             >
               <Ionicons name="footsteps" size={14} color={COLORS.white} />
             </View>
-          </Mapbox.PointAnnotation>
+          </Marker>
         ))}
 
         {/* POI markers */}
         {showPOIs && filteredPOIs.map((poi) => (
-          <Mapbox.PointAnnotation
+          <Marker
             key={`poi-${poi._id}`}
-            id={`poi-${poi._id}`}
-            coordinate={[poi.location.lng, poi.location.lat]}
-            onSelected={() => setSelected({ type: 'poi', data: poi })}
+            coordinate={{
+              latitude: poi.location.lat,
+              longitude: poi.location.lng,
+            }}
+            onPress={() => setSelected({ type: 'poi', data: poi })}
           >
             <POIMarker
               type={poi.type}
               isActive={selected?.type === 'poi' && selected?.data?._id === poi._id}
             />
-          </Mapbox.PointAnnotation>
+          </Marker>
         ))}
-
-        {/* User location */}
-        <Mapbox.UserLocation />
-      </Mapbox.MapView>
+      </MapView>
 
       {/* POI Filter */}
       <POIFilter

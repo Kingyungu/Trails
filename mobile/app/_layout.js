@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import '../services/mapbox'; // Initialize Mapbox token
 import useAuthStore from '../store/authStore';
 import useOfflineStore from '../store/offlineStore';
 import { COLORS } from '../constants/theme';

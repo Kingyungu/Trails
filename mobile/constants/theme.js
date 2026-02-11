@@ -44,6 +44,16 @@ export const COLORS = {
   tertiarySystemFill: '#7676801F',
   quaternarySystemFill: '#74748014',
 
+  // Aliases (used by components with generic naming)
+  primary: '#2D6A4F',
+  text: '#000000',
+  textSecondary: '#3C3C4399',
+  textLight: '#8E8E93',
+  surface: '#FFFFFF',
+  border: '#E5E5EA',
+  success: '#34C759',
+  error: '#FF3B30',
+
   // Essentials
   white: '#FFFFFF',
   black: '#000000',

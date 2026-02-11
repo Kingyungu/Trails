@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity, ScrollView, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, RADIUS, SHADOWS } from '../constants/theme';
+import FilterModal from './FilterModal';
 
-export default function SearchBar({ onSearch, regions = [], onFilter }) {
+export default function SearchBar({ onSearch, regions = [], onFilter, currentFilters = {} }) {
   const [query, setQuery] = useState('');
   const [activeRegion, setActiveRegion] = useState('');
+  const [filterVisible, setFilterVisible] = useState(false);
 
   const handleSearch = () => {
     onSearch(query);
@@ -16,6 +18,12 @@ export default function SearchBar({ onSearch, regions = [], onFilter }) {
     setActiveRegion(next);
     onFilter?.({ region: next });
   };
+
+  const handleFilterApply = (filters) => {
+    onFilter?.(filters);
+  };
+
+  const hasActiveFilters = currentFilters.difficulty !== '' || currentFilters.sort !== 'rating';
 
   return (
     <View style={styles.container}>
@@ -37,8 +45,12 @@ export default function SearchBar({ onSearch, regions = [], onFilter }) {
             </TouchableOpacity>
           )}
         </View>
-        <TouchableOpacity style={styles.filterBtn} onPress={handleSearch}>
+        <TouchableOpacity
+          style={[styles.filterBtn, hasActiveFilters && styles.filterBtnActive]}
+          onPress={() => setFilterVisible(true)}
+        >
           <Ionicons name="options" size={22} color={COLORS.white} />
+          {hasActiveFilters && <View style={styles.filterBadge} />}
         </TouchableOpacity>
       </View>
 
@@ -63,6 +75,13 @@ export default function SearchBar({ onSearch, regions = [], onFilter }) {
           ))}
         </ScrollView>
       )}
+
+      <FilterModal
+        visible={filterVisible}
+        onClose={() => setFilterVisible(false)}
+        onApply={handleFilterApply}
+        currentFilters={currentFilters}
+      />
     </View>
   );
 }
@@ -101,6 +120,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     ...SHADOWS.sm,
+  },
+  filterBtnActive: {
+    backgroundColor: COLORS.tint,
+  },
+  filterBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: COLORS.systemOrange,
+    borderWidth: 2,
+    borderColor: COLORS.primary,
   },
   chips: {
     paddingTop: SPACING.sm + 2,

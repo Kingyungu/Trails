@@ -1,3 +1,4 @@
+import React, { memo } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,7 +7,7 @@ import DifficultyBadge from './DifficultyBadge';
 import OfflineBadge from './OfflineBadge';
 import useOfflineStore from '../store/offlineStore';
 
-export default function TrailCard({ trail, compact = false }) {
+const TrailCard = memo(function TrailCard({ trail, compact = false }) {
   const router = useRouter();
   const diff = DIFFICULTY[trail.difficulty];
   const isAvailableOffline = useOfflineStore((s) => s.isOffline(trail._id));
@@ -46,7 +47,9 @@ export default function TrailCard({ trail, compact = false }) {
       </View>
     </TouchableOpacity>
   );
-}
+});
+
+export default TrailCard;
 
 const styles = StyleSheet.create({
   card: {

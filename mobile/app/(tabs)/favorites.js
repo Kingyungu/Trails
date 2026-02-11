@@ -14,6 +14,9 @@ import useTrailStore from '../../store/trailStore';
 import TrailCard from '../../components/TrailCard';
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from '../../constants/theme';
 
+const renderItem = ({ item }) => <TrailCard trail={item} />;
+const keyExtractor = (item) => item._id || item;
+
 export default function FavoritesScreen() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
@@ -48,8 +51,12 @@ export default function FavoritesScreen() {
       style={styles.container}
       contentContainerStyle={styles.list}
       data={favorites}
-      keyExtractor={(item) => item._id}
-      renderItem={({ item }) => <TrailCard trail={item} />}
+      keyExtractor={keyExtractor}
+      renderItem={renderItem}
+      removeClippedSubviews
+      maxToRenderPerBatch={10}
+      windowSize={5}
+      initialNumToRender={6}
       refreshControl={
         <RefreshControl
           refreshing={loading}

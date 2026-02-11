@@ -7,7 +7,7 @@ import {
   Alert,
   Share,
 } from 'react-native';
-import Mapbox from '@rnmapbox/maps';
+import MapView, { Marker, Polyline } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import useTrackingStore from '../store/trackingStore';
 import TrackingPanel from '../components/TrackingPanel';
@@ -24,27 +24,31 @@ export default function TrackingScreen() {
     stopTracking,
     reset,
   } = useTrackingStore();
-  const cameraRef = useRef(null);
+  const mapRef = useRef(null);
   const [userLoc, setUserLoc] = useState(null);
 
   useEffect(() => {
     (async () => {
       const loc = await getCurrentLocation();
       if (loc) {
-        setUserLoc([loc.coords.longitude, loc.coords.latitude]);
+        setUserLoc({
+          latitude: loc.coords.latitude,
+          longitude: loc.coords.longitude,
+        });
       }
     })();
   }, []);
 
   // Follow user on map when tracking
   useEffect(() => {
-    if (route.length > 0 && cameraRef.current && !isTracking) {
+    if (route.length > 0 && mapRef.current) {
       const last = route[route.length - 1];
-      cameraRef.current.setCamera({
-        centerCoordinate: [last.lng, last.lat],
-        zoomLevel: 15,
-        animationDuration: 500,
-      });
+      mapRef.current.animateToRegion({
+        latitude: last.lat,
+        longitude: last.lng,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      }, 500);
     }
   }, [route.length]);
 
@@ -80,68 +84,52 @@ export default function TrackingScreen() {
     ]);
   };
 
-  // Build GeoJSON for tracked route
-  const routeGeoJSON = route.length > 1
-    ? {
-        type: 'Feature',
-        geometry: {
-          type: 'LineString',
-          coordinates: route.map((p) => [p.lng, p.lat]),
-        },
-      }
-    : null;
+  const routeCoords = route.map((p) => ({
+    latitude: p.lat,
+    longitude: p.lng,
+  }));
 
-  const initialCenter = userLoc || [36.8219, -1.2921]; // Default to Nairobi
+  const initialRegion = userLoc
+    ? { ...userLoc, latitudeDelta: 0.02, longitudeDelta: 0.02 }
+    : { latitude: -1.2921, longitude: 36.8219, latitudeDelta: 0.02, longitudeDelta: 0.02 };
 
   return (
     <View style={styles.container}>
-      <Mapbox.MapView
+      <MapView
+        ref={mapRef}
         style={styles.map}
-        styleURL={Mapbox.StyleURL.Outdoors}
-        attributionEnabled={false}
-        logoEnabled={false}
-        compassEnabled={true}
-        scaleBarEnabled={true}
+        initialRegion={initialRegion}
+        showsUserLocation={true}
+        followsUserLocation={isTracking}
+        showsMyLocationButton={true}
+        showsCompass={true}
+        showsScale={true}
       >
-        <Mapbox.Camera
-          ref={cameraRef}
-          centerCoordinate={initialCenter}
-          zoomLevel={14}
-          followUserLocation={isTracking}
-          followZoomLevel={15}
-          animationMode="flyTo"
-        />
-
-        {/* User location dot */}
-        <Mapbox.UserLocation />
-
         {/* Tracked route line */}
-        {routeGeoJSON && (
-          <Mapbox.ShapeSource id="trackingRoute" shape={routeGeoJSON}>
-            <Mapbox.LineLayer
-              id="trackingRouteLine"
-              style={{
-                lineColor: COLORS.tint,
-                lineWidth: 4,
-                lineCap: 'round',
-                lineJoin: 'round',
-              }}
-            />
-          </Mapbox.ShapeSource>
+        {routeCoords.length > 1 && (
+          <Polyline
+            coordinates={routeCoords}
+            strokeColor={COLORS.tint}
+            strokeWidth={4}
+            lineCap="round"
+            lineJoin="round"
+          />
         )}
 
         {/* Start marker */}
         {route.length > 0 && (
-          <Mapbox.PointAnnotation
-            id="trackingStart"
-            coordinate={[route[0].lng, route[0].lat]}
+          <Marker
+            coordinate={{
+              latitude: route[0].lat,
+              longitude: route[0].lng,
+            }}
           >
             <View style={styles.startMarker}>
               <Ionicons name="flag" size={14} color={COLORS.white} />
             </View>
-          </Mapbox.PointAnnotation>
+          </Marker>
         )}
-      </Mapbox.MapView>
+      </MapView>
 
       {/* Stats panel */}
       <TrackingPanel />

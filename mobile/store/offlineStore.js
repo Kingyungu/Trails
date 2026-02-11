@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Mapbox from '@rnmapbox/maps';
 
 const STORAGE_KEY = 'offlineTrails';
 
@@ -31,38 +30,10 @@ const useOfflineStore = create((set, get) => ({
     }));
 
     try {
-      // Calculate bounding box from trail coordinates
-      const lats = trail.coordinates.map((c) => c.lat);
-      const lngs = trail.coordinates.map((c) => c.lng);
-      const padding = 0.01;
-      const bounds = [
-        [Math.min(...lngs) - padding, Math.min(...lats) - padding], // SW [lng, lat]
-        [Math.max(...lngs) + padding, Math.max(...lats) + padding], // NE [lng, lat]
-      ];
-
-      const packName = `trail_${trailId}`;
-
-      // Download Mapbox offline tiles
-      await Mapbox.offlineManager.createPack(
-        {
-          name: packName,
-          styleURL: Mapbox.StyleURL.Outdoors,
-          bounds,
-          minZoom: 10,
-          maxZoom: 16,
-        },
-        (region, status) => {
-          const progress = Math.round(
-            status.completedResourceCount / Math.max(status.requiredResourceCount, 1) * 100
-          );
-          set((s) => ({
-            downloadProgress: { ...s.downloadProgress, [trailId]: progress },
-          }));
-        },
-        (region, error) => {
-          console.error('Offline download error:', error);
-        }
-      );
+      // Simulate brief download progress for trail data caching
+      set((s) => ({
+        downloadProgress: { ...s.downloadProgress, [trailId]: 50 },
+      }));
 
       // Cache trail data in AsyncStorage
       const offlineTrailData = {
@@ -83,7 +54,6 @@ const useOfflineStore = create((set, get) => ({
           review_count: trail.review_count,
         },
         downloadedAt: new Date().toISOString(),
-        mapPackName: packName,
       };
 
       const updatedOffline = {
@@ -109,12 +79,6 @@ const useOfflineStore = create((set, get) => ({
   removeTrail: async (trailId) => {
     try {
       const offline = get().offlineTrails;
-      const trailData = offline[trailId];
-
-      if (trailData?.mapPackName) {
-        await Mapbox.offlineManager.deletePack(trailData.mapPackName);
-      }
-
       const updated = { ...offline };
       delete updated[trailId];
 

@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -15,8 +15,11 @@ import SearchBar from '../../components/SearchBar';
 import NearbyTrails from '../../components/NearbyTrails';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../constants/theme';
 
+const renderItem = ({ item }) => <TrailCard trail={item} />;
+const keyExtractor = (item) => item._id;
+
 export default function HomeScreen() {
-  const { trails, regions, loading, fetchTrails, fetchRegions, setFilters } = useTrailStore();
+  const { trails, regions, loading, filters, fetchTrails, fetchRegions, setFilters } = useTrailStore();
 
   useEffect(() => {
     fetchTrails(true);
@@ -44,37 +47,54 @@ export default function HomeScreen() {
   }, [fetchTrails]);
 
   // Top rated trails (first 5)
-  const topTrails = trails.slice(0, 5);
+  const topTrails = useMemo(() => trails.slice(0, 5), [trails]);
 
-  const ListHeader = () => (
-    <View>
-      <SearchBar onSearch={handleSearch} regions={regions} onFilter={handleFilter} />
+  const listHeader = useMemo(
+    () => (
+      <View>
+        <SearchBar onSearch={handleSearch} regions={regions} onFilter={handleFilter} currentFilters={filters} />
 
-      {/* Nearby Trails */}
-      <View style={{ marginTop: SPACING.lg }}>
-        <NearbyTrails />
-      </View>
-
-      {/* Featured horizontal scroll */}
-      {topTrails.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Top Rated</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.featuredList}
-          >
-            {topTrails.map((trail) => (
-              <TrailCard key={trail._id} trail={trail} compact />
-            ))}
-          </ScrollView>
+        {/* Nearby Trails */}
+        <View style={{ marginTop: SPACING.lg }}>
+          <NearbyTrails />
         </View>
-      )}
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>All Trails</Text>
+        {/* Featured horizontal scroll */}
+        {topTrails.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Top Rated</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.featuredList}
+            >
+              {topTrails.map((trail) => (
+                <TrailCard key={trail._id} trail={trail} compact />
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>All Trails</Text>
+        </View>
       </View>
-    </View>
+    ),
+    [topTrails, regions, filters, handleSearch, handleFilter]
+  );
+
+  const listEmpty = useMemo(
+    () =>
+      loading ? (
+        <ActivityIndicator size="large" color={COLORS.tint} style={{ marginTop: 40 }} />
+      ) : (
+        <View style={styles.empty}>
+          <Ionicons name="trail-sign-outline" size={48} color={COLORS.systemGray3} />
+          <Text style={styles.emptyTitle}>No trails found</Text>
+          <Text style={styles.emptyText}>Try adjusting your search or filters</Text>
+        </View>
+      ),
+    [loading]
   );
 
   return (
@@ -82,20 +102,14 @@ export default function HomeScreen() {
       style={styles.container}
       contentContainerStyle={styles.list}
       data={trails}
-      keyExtractor={(item) => item._id}
-      renderItem={({ item }) => <TrailCard trail={item} />}
-      ListHeaderComponent={ListHeader}
-      ListEmptyComponent={
-        loading ? (
-          <ActivityIndicator size="large" color={COLORS.tint} style={{ marginTop: 40 }} />
-        ) : (
-          <View style={styles.empty}>
-            <Ionicons name="trail-sign-outline" size={48} color={COLORS.systemGray3} />
-            <Text style={styles.emptyTitle}>No trails found</Text>
-            <Text style={styles.emptyText}>Try adjusting your search or filters</Text>
-          </View>
-        )
-      }
+      keyExtractor={keyExtractor}
+      renderItem={renderItem}
+      ListHeaderComponent={listHeader}
+      ListEmptyComponent={listEmpty}
+      removeClippedSubviews
+      maxToRenderPerBatch={10}
+      windowSize={5}
+      initialNumToRender={6}
       refreshControl={
         <RefreshControl
           refreshing={loading}

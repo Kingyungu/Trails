@@ -29,14 +29,7 @@
       "expo-router",
       "expo-location",
       "expo-image-picker",
-      "expo-secure-store",
-      [
-        "@rnmapbox/maps",
-        {
-          "RNMapboxMapsImpl": "mapbox",
-          "RNMapboxMapsDownloadToken": "YOUR_MAPBOX_SECRET_TOKEN"
-        }
-      ]
+      "expo-secure-store"
     ]
   }
 }

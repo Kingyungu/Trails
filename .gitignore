@@ -17,3 +17,10 @@ npm-debug.log*
 # Build output
 dist/
 build/
+
+# Expo
+.expo/
+
+# Uploads
+server/uploads/*
+!server/uploads/.gitkeep

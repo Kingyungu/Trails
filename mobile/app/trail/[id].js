@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import useTrailStore from '../../store/trailStore';
 import useAuthStore from '../../store/authStore';
 import DifficultyBadge from '../../components/DifficultyBadge';
-import TrailMap from '../../components/TrailMap';
+import TrailMapEnhanced from '../../components/TrailMapEnhanced';
 import PhotoGallery from '../../components/PhotoGallery';
 import ReviewCard from '../../components/ReviewCard';
 import ElevationProfile from '../../components/ElevationProfile';
@@ -181,7 +181,7 @@ export default function TrailDetailScreen() {
 
         {/* Map */}
         <Text style={styles.sectionTitle}>Trail Map</Text>
-        <TrailMap
+        <TrailMapEnhanced
           location={displayTrail.location}
           coordinates={displayTrail.coordinates}
           style={styles.mapContainer}

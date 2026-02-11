@@ -1,14 +1,14 @@
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import Mapbox from '@rnmapbox/maps';
+import MapView, { Marker, Polyline } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { COLORS, RADIUS, SPACING } from '../constants/theme';
+import { COLORS, RADIUS } from '../constants/theme';
 
-const MAP_STYLES = [
-  { key: 'outdoors', label: 'Outdoors', url: Mapbox.StyleURL.Outdoors },
-  { key: 'satellite', label: 'Satellite', url: Mapbox.StyleURL.Satellite },
-  { key: 'satelliteStreet', label: 'Sat+Labels', url: Mapbox.StyleURL.SatelliteStreet },
-  { key: 'street', label: 'Street', url: Mapbox.StyleURL.Street },
+const MAP_TYPES = [
+  { key: 'standard', label: 'Standard' },
+  { key: 'satellite', label: 'Satellite' },
+  { key: 'hybrid', label: 'Hybrid' },
+  { key: 'terrain', label: 'Terrain' },
 ];
 
 export default function TrailMapEnhanced({
@@ -20,116 +20,106 @@ export default function TrailMapEnhanced({
   showRoute = true,
   interactive = true,
 }) {
-  const [styleIndex, setStyleIndex] = useState(0);
+  const [typeIndex, setTypeIndex] = useState(0);
 
   if (!location && trails.length === 0) return null;
 
-  const currentStyle = MAP_STYLES[styleIndex];
+  const currentType = MAP_TYPES[typeIndex];
 
-  const toggleMapStyle = () => {
-    setStyleIndex((prev) => (prev + 1) % MAP_STYLES.length);
+  const toggleMapType = () => {
+    setTypeIndex((prev) => (prev + 1) % MAP_TYPES.length);
   };
 
-  // Build GeoJSON for route line
-  const routeGeoJSON = coordinates.length > 1
+  const region = location
     ? {
-        type: 'Feature',
-        geometry: {
-          type: 'LineString',
-          coordinates: coordinates.map((c) => [c.lng, c.lat]),
-        },
+        latitude: location.lat,
+        longitude: location.lng,
+        latitudeDelta: 0.04,
+        longitudeDelta: 0.04,
       }
-    : null;
+    : {
+        latitude: 0.0236,
+        longitude: 37.9062,
+        latitudeDelta: 10,
+        longitudeDelta: 10,
+      };
+
+  const routeCoords = coordinates.map((c) => ({
+    latitude: c.lat,
+    longitude: c.lng,
+  }));
 
   return (
     <View style={[styles.container, style]}>
-      <Mapbox.MapView
+      <MapView
         style={styles.map}
-        styleURL={currentStyle.url}
+        mapType={currentType.key}
+        initialRegion={region}
         scrollEnabled={interactive}
         zoomEnabled={interactive}
         rotateEnabled={false}
         pitchEnabled={interactive}
-        attributionEnabled={false}
-        logoEnabled={false}
-        compassEnabled={interactive}
-        scaleBarEnabled={interactive}
       >
-        <Mapbox.Camera
-          centerCoordinate={
-            location
-              ? [location.lng, location.lat]
-              : [37.9062, 0.0236]
-          }
-          zoomLevel={location ? 14 : 5}
-          animationMode="flyTo"
-          animationDuration={1000}
-        />
-
         {/* Trail route line */}
-        {showRoute && routeGeoJSON && (
-          <Mapbox.ShapeSource id="trailRouteEnhanced" shape={routeGeoJSON}>
-            <Mapbox.LineLayer
-              id="trailRouteBorderEnhanced"
-              style={{
-                lineColor: '#FFFFFF',
-                lineWidth: 7,
-                lineCap: 'round',
-                lineJoin: 'round',
-              }}
+        {showRoute && routeCoords.length > 1 && (
+          <>
+            <Polyline
+              coordinates={routeCoords}
+              strokeColor="#FFFFFF"
+              strokeWidth={7}
+              lineCap="round"
+              lineJoin="round"
             />
-            <Mapbox.LineLayer
-              id="trailRouteLineEnhanced"
-              style={{
-                lineColor: COLORS.primary,
-                lineWidth: 4,
-                lineCap: 'round',
-                lineJoin: 'round',
-              }}
-              aboveLayerID="trailRouteBorderEnhanced"
+            <Polyline
+              coordinates={routeCoords}
+              strokeColor={COLORS.primary}
+              strokeWidth={4}
+              lineCap="round"
+              lineJoin="round"
             />
-          </Mapbox.ShapeSource>
+          </>
         )}
 
         {/* Trailhead marker */}
         {location && (
-          <Mapbox.PointAnnotation
-            id="trailheadEnhanced"
-            coordinate={[location.lng, location.lat]}
+          <Marker
+            coordinate={{ latitude: location.lat, longitude: location.lng }}
           >
             <View style={styles.startMarker}>
               <Ionicons name="flag" size={20} color={COLORS.white} />
             </View>
-          </Mapbox.PointAnnotation>
+          </Marker>
         )}
 
         {/* Multiple trail markers */}
         {trails.map((trail) => (
-          <Mapbox.PointAnnotation
+          <Marker
             key={trail._id}
-            id={`trail-enhanced-${trail._id}`}
-            coordinate={[trail.location.lng, trail.location.lat]}
-            onSelected={() => onMarkerPress?.(trail)}
+            coordinate={{
+              latitude: trail.location.lat,
+              longitude: trail.location.lng,
+            }}
+            onPress={() => onMarkerPress?.(trail)}
           >
             <View style={styles.customMarker}>
               <Text style={styles.markerText}>
                 {trail.rating_avg.toFixed(1)}
               </Text>
             </View>
-          </Mapbox.PointAnnotation>
+          </Marker>
         ))}
-      </Mapbox.MapView>
+      </MapView>
 
       {/* Map controls */}
       {interactive && (
         <View style={styles.controls}>
           <TouchableOpacity
             style={styles.controlButton}
-            onPress={toggleMapStyle}
+            onPress={toggleMapType}
             activeOpacity={0.7}
           >
             <Ionicons name="layers-outline" size={20} color={COLORS.primary} />
-            <Text style={styles.controlText}>{currentStyle.label}</Text>
+            <Text style={styles.controlText}>{currentType.label}</Text>
           </TouchableOpacity>
         </View>
       )}

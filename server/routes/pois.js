@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const POI = require('../models/POI');
+const { auth } = require('../middleware/auth');
 
 // GET /api/pois - Get all POIs with optional filters
 router.get('/', async (req, res) => {
@@ -93,8 +94,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/pois - Create new POI (protected route - would need auth middleware)
-router.post('/', async (req, res) => {
+// POST /api/pois - Create new POI
+router.post('/', auth, async (req, res) => {
   try {
     const poi = new POI(req.body);
     await poi.save();
@@ -105,8 +106,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /api/pois/:id - Update POI (protected route - would need auth middleware)
-router.put('/:id', async (req, res) => {
+// PUT /api/pois/:id - Update POI
+router.put('/:id', auth, async (req, res) => {
   try {
     const poi = await POI.findByIdAndUpdate(
       req.params.id,
@@ -125,8 +126,8 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/pois/:id - Delete POI (protected route - would need auth middleware)
-router.delete('/:id', async (req, res) => {
+// DELETE /api/pois/:id - Delete POI
+router.delete('/:id', auth, async (req, res) => {
   try {
     const poi = await POI.findByIdAndDelete(req.params.id);
 

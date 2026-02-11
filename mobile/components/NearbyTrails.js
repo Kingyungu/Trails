@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { memo, useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -14,7 +14,7 @@ import DifficultyBadge from './DifficultyBadge';
 import { getCurrentLocation } from '../services/location';
 import { COLORS, SPACING, RADIUS, SHADOWS, DIFFICULTY } from '../constants/theme';
 
-export default function NearbyTrails() {
+export default memo(function NearbyTrails() {
   const router = useRouter();
   const {
     nearbyAppTrails,
@@ -167,7 +167,7 @@ export default function NearbyTrails() {
       </ScrollView>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {
