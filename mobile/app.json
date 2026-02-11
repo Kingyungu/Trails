@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Trails",
+    "slug": "trails",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "scheme": "trails",
+    "splash": {
+      "backgroundColor": "#2D6A4F"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.trails.kenya",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Trails needs your location to track your hikes and show nearby trails.",
+        "NSLocationAlwaysUsageDescription": "Trails uses background location to record your trail progress."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#2D6A4F"
+      },
+      "package": "com.trails.kenya",
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-location",
+      "expo-image-picker",
+      "expo-secure-store",
+      [
+        "@rnmapbox/maps",
+        {
+          "RNMapboxMapsImpl": "mapbox",
+          "RNMapboxMapsDownloadToken": "YOUR_MAPBOX_SECRET_TOKEN"
+        }
+      ]
+    ]
+  }
+}

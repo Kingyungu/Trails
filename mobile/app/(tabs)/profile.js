@@ -1,0 +1,296 @@
+import { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Alert,
+  ScrollView,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import useAuthStore from '../../store/authStore';
+import { uploadImage } from '../../services/api';
+import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from '../../constants/theme';
+
+export default function ProfileScreen() {
+  const router = useRouter();
+  const { user, logout, update } = useAuthStore();
+  const [uploading, setUploading] = useState(false);
+
+  const handlePickAvatar = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+
+    if (!result.canceled) {
+      setUploading(true);
+      try {
+        const formData = new FormData();
+        const uri = result.assets[0].uri;
+        formData.append('image', {
+          uri,
+          name: 'avatar.jpg',
+          type: 'image/jpeg',
+        });
+        const { data } = await uploadImage(formData);
+        await update({ avatar: data.url });
+      } catch {
+        Alert.alert('Upload Failed', 'Could not upload image');
+      }
+      setUploading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Sign Out',
+        style: 'destructive',
+        onPress: logout,
+      },
+    ]);
+  };
+
+  if (!user) {
+    return (
+      <View style={styles.centered}>
+        <View style={styles.iconCircle}>
+          <Ionicons name="person" size={48} color={COLORS.systemGray} />
+        </View>
+        <Text style={styles.emptyTitle}>Your Profile</Text>
+        <Text style={styles.emptyText}>
+          Sign in to track trails, write reviews, and save favorites
+        </Text>
+        <TouchableOpacity
+          style={styles.primaryBtn}
+          onPress={() => router.push('/auth/login')}
+        >
+          <Text style={styles.primaryBtnText}>Sign In</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.secondaryBtn}
+          onPress={() => router.push('/auth/register')}
+        >
+          <Text style={styles.secondaryBtnText}>Create Account</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      {/* Avatar and name */}
+      <View style={styles.profileHeader}>
+        <TouchableOpacity onPress={handlePickAvatar} style={styles.avatarWrap}>
+          {user.avatar ? (
+            <Image source={{ uri: user.avatar }} style={styles.avatar} />
+          ) : (
+            <View style={styles.avatarPlaceholder}>
+              <Ionicons name="person" size={40} color={COLORS.systemGray} />
+            </View>
+          )}
+          <View style={styles.cameraIcon}>
+            <Ionicons name="camera" size={14} color={COLORS.white} />
+          </View>
+        </TouchableOpacity>
+        <Text style={styles.userName}>{user.name}</Text>
+        <Text style={styles.userEmail}>{user.email}</Text>
+        <Text style={styles.joinDate}>
+          Joined {new Date(user.created_at).toLocaleDateString('en-KE', { month: 'long', year: 'numeric' })}
+        </Text>
+      </View>
+
+      {/* Quick stats */}
+      <View style={styles.statsCard}>
+        <View style={styles.statBox}>
+          <Text style={styles.statNum}>{user.favorites?.length || 0}</Text>
+          <Text style={styles.statLabel}>Saved</Text>
+        </View>
+      </View>
+
+      {/* Menu items */}
+      <View style={styles.menuGroup}>
+        <MenuItem icon="heart" label="Saved Trails" onPress={() => router.push('/favorites')} />
+        <MenuItem icon="location" label="Track a Trail" onPress={() => router.push('/tracking')} />
+        <MenuItem icon="information-circle" label="About Trails" />
+      </View>
+
+      {/* Destructive action - separate group */}
+      <View style={styles.menuGroup}>
+        <MenuItem icon="log-out" label="Sign Out" onPress={handleLogout} danger last />
+      </View>
+    </ScrollView>
+  );
+}
+
+function MenuItem({ icon, label, onPress, danger, last }) {
+  return (
+    <TouchableOpacity style={[styles.menuItem, last && styles.menuItemLast]} onPress={onPress}>
+      <Ionicons
+        name={icon}
+        size={22}
+        color={danger ? COLORS.systemRed : COLORS.tint}
+      />
+      <Text style={[styles.menuLabel, danger && { color: COLORS.systemRed }]}>{label}</Text>
+      <Ionicons name="chevron-forward" size={18} color={COLORS.tertiaryLabel} />
+    </TouchableOpacity>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.systemGroupedBackground,
+  },
+  content: {
+    paddingBottom: 100,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: SPACING.xl,
+    backgroundColor: COLORS.systemGroupedBackground,
+  },
+  iconCircle: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: COLORS.systemGray5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: SPACING.lg,
+  },
+  emptyTitle: {
+    ...TYPOGRAPHY.title2,
+    color: COLORS.label,
+  },
+  emptyText: {
+    ...TYPOGRAPHY.subhead,
+    color: COLORS.secondaryLabel,
+    textAlign: 'center',
+    marginTop: SPACING.sm,
+    maxWidth: 260,
+  },
+  primaryBtn: {
+    marginTop: SPACING.lg,
+    backgroundColor: COLORS.tint,
+    paddingHorizontal: 48,
+    paddingVertical: 14,
+    borderRadius: RADIUS.md,
+  },
+  primaryBtnText: {
+    ...TYPOGRAPHY.headline,
+    color: COLORS.white,
+  },
+  secondaryBtn: {
+    marginTop: SPACING.md,
+  },
+  secondaryBtnText: {
+    ...TYPOGRAPHY.subhead,
+    fontWeight: '600',
+    color: COLORS.tint,
+  },
+  profileHeader: {
+    alignItems: 'center',
+    paddingVertical: SPACING.xl,
+    backgroundColor: COLORS.systemGroupedBackground,
+  },
+  avatarWrap: {
+    position: 'relative',
+  },
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
+  avatarPlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: COLORS.systemGray5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cameraIcon: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: COLORS.tint,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.systemGroupedBackground,
+  },
+  userName: {
+    ...TYPOGRAPHY.title2,
+    color: COLORS.label,
+    marginTop: SPACING.md,
+  },
+  userEmail: {
+    ...TYPOGRAPHY.subhead,
+    color: COLORS.secondaryLabel,
+    marginTop: 2,
+  },
+  joinDate: {
+    ...TYPOGRAPHY.caption1,
+    color: COLORS.tertiaryLabel,
+    marginTop: 4,
+  },
+  statsCard: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    backgroundColor: COLORS.secondarySystemGroupedBackground,
+    marginHorizontal: SPACING.md,
+    borderRadius: RADIUS.md,
+    padding: SPACING.md,
+    gap: SPACING.xl,
+  },
+  statBox: {
+    alignItems: 'center',
+  },
+  statNum: {
+    ...TYPOGRAPHY.title1,
+    color: COLORS.tint,
+  },
+  statLabel: {
+    ...TYPOGRAPHY.footnote,
+    color: COLORS.secondaryLabel,
+    marginTop: 2,
+  },
+  menuGroup: {
+    backgroundColor: COLORS.secondarySystemGroupedBackground,
+    marginHorizontal: SPACING.md,
+    borderRadius: RADIUS.md,
+    marginTop: SPACING.lg,
+    overflow: 'hidden',
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: SPACING.md,
+    gap: SPACING.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: COLORS.separator,
+    minHeight: 44,
+  },
+  menuItemLast: {
+    borderBottomWidth: 0,
+  },
+  menuLabel: {
+    flex: 1,
+    ...TYPOGRAPHY.body,
+    color: COLORS.label,
+  },
+});
