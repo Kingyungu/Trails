@@ -265,9 +265,14 @@ export default function ExploreScreen() {
             <View style={styles.dragHandle} />
             <View style={styles.cardHeader}>
               <View style={styles.cardInfo}>
-                <Text style={styles.cardName} numberOfLines={1}>
-                  {selected.data.name}
-                </Text>
+                <View style={styles.poiNameRow}>
+                  <Text style={styles.cardName} numberOfLines={1}>
+                    {selected.data.name}
+                  </Text>
+                  {selected.data.verified && (
+                    <Ionicons name="checkmark-circle" size={16} color={COLORS.systemGreen} />
+                  )}
+                </View>
                 <Text style={styles.cardRegion}>{selected.data.region}</Text>
               </View>
               <View style={styles.poiTypeBadge}>
@@ -276,6 +281,11 @@ export default function ExploreScreen() {
                 </Text>
               </View>
             </View>
+            {selected.data.description && (
+              <Text style={styles.cardDescription} numberOfLines={2}>
+                {selected.data.description}
+              </Text>
+            )}
             <View style={styles.cardStats}>
               {selected.data.rating_avg > 0 && (
                 <View style={styles.cardStat}>
@@ -283,24 +293,32 @@ export default function ExploreScreen() {
                   <Text style={styles.cardStatVal}>{selected.data.rating_avg}</Text>
                 </View>
               )}
+              {selected.data.elevation_m && (
+                <View style={styles.cardStat}>
+                  <Ionicons name="trending-up" size={16} color={COLORS.tint} />
+                  <Text style={styles.cardStatVal}>{selected.data.elevation_m}m</Text>
+                </View>
+              )}
               {selected.data.fees?.hasEntry && (
                 <View style={styles.cardStat}>
-                  <Ionicons name="cash" size={16} color={COLORS.tint} />
+                  <Ionicons name="cash" size={16} color={COLORS.systemOrange} />
                   <Text style={styles.cardStatVal}>
                     {selected.data.fees.amount} {selected.data.fees.currency}
                   </Text>
                 </View>
               )}
-              {selected.data.verified && (
+              {selected.data.openingHours && (
                 <View style={styles.cardStat}>
-                  <Ionicons name="checkmark-circle" size={16} color={COLORS.systemGreen} />
-                  <Text style={styles.cardStatVal}>Verified</Text>
+                  <Ionicons name="time" size={16} color={COLORS.systemIndigo} />
+                  <Text style={styles.cardStatVal}>
+                    {selected.data.openingHours.open}-{selected.data.openingHours.close}
+                  </Text>
                 </View>
               )}
-              <TouchableOpacity style={styles.goBtn}>
-                <Text style={styles.goBtnText}>View Details</Text>
-                <Ionicons name="chevron-forward" size={16} color={COLORS.tint} />
-              </TouchableOpacity>
+            </View>
+            <View style={styles.viewDetailsBtn}>
+              <Text style={styles.viewDetailsBtnText}>View Details</Text>
+              <Ionicons name="chevron-forward" size={16} color={COLORS.white} />
             </View>
           </TouchableOpacity>
         )}
@@ -472,5 +490,31 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.subhead,
     fontWeight: '600',
     color: COLORS.tint,
+  },
+  poiNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  cardDescription: {
+    ...TYPOGRAPHY.footnote,
+    color: COLORS.secondaryLabel,
+    lineHeight: 18,
+    marginBottom: SPACING.md,
+  },
+  viewDetailsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    backgroundColor: COLORS.tint,
+    paddingVertical: 10,
+    borderRadius: RADIUS.md,
+    marginTop: SPACING.md,
+  },
+  viewDetailsBtnText: {
+    ...TYPOGRAPHY.subhead,
+    fontWeight: '600',
+    color: COLORS.white,
   },
 });

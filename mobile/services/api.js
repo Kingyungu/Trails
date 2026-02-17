@@ -33,6 +33,17 @@ export const getMe = () => api.get('/auth/me');
 
 export const updateProfile = (data) => api.put('/auth/me', data);
 
+export const changePassword = (currentPassword, newPassword) =>
+  api.put('/auth/password', { currentPassword, newPassword });
+
+export const deleteAccount = () => api.delete('/auth/me');
+
+export const forgotPassword = (email) =>
+  api.post('/auth/forgot-password', { email });
+
+export const resetPassword = (email, code, newPassword) =>
+  api.post('/auth/reset-password', { email, code, newPassword });
+
 // Trails
 export const getTrails = (params) => api.get('/trails', { params });
 
@@ -55,6 +66,20 @@ export const getNearbyTrails = (lat, lng, radius) =>
 export const getReviews = (trailId) => api.get(`/reviews/${trailId}`);
 
 export const addReview = (data) => api.post('/reviews', data);
+
+// Activities
+export const saveActivity = (data) => api.post('/activities', data);
+
+export const getActivities = (params) => api.get('/activities', { params });
+
+export const getActivityStats = () => api.get('/activities/stats');
+
+export const deleteActivity = (id) => api.delete(`/activities/${id}`);
+
+// Condition Reports
+export const getTrailConditions = (trailId) => api.get(`/conditions/${trailId}`);
+
+export const reportCondition = (data) => api.post('/conditions', data);
 
 // Uploads
 export const uploadImage = (formData) =>

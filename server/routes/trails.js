@@ -111,6 +111,16 @@ router.get('/nearby', async (req, res) => {
   }
 });
 
+// GET /api/trails/user/favorites - Get user's saved trails (must be before /:id)
+router.get('/user/favorites', auth, async (req, res) => {
+  try {
+    const user = await req.user.populate('favorites');
+    res.json(user.favorites.filter(Boolean));
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // GET /api/trails/:id/elevation - Get or generate elevation profile
 router.get('/:id/elevation', async (req, res) => {
   try {
@@ -164,7 +174,7 @@ router.post('/:id/favorite', auth, async (req, res) => {
   try {
     const trailId = req.params.id;
     const user = req.user;
-    const index = user.favorites.indexOf(trailId);
+    const index = user.favorites.findIndex((id) => id.toString() === trailId);
 
     if (index === -1) {
       user.favorites.push(trailId);
@@ -173,16 +183,6 @@ router.post('/:id/favorite', auth, async (req, res) => {
     }
     await user.save();
     res.json({ favorites: user.favorites, isFavorite: index === -1 });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// GET /api/favorites - Get user's favorites
-router.get('/user/favorites', auth, async (req, res) => {
-  try {
-    const user = await req.user.populate('favorites');
-    res.json(user.favorites);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

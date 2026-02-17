@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import useAuthStore from '../../store/authStore';
 import useTrailStore from '../../store/trailStore';
@@ -20,14 +20,26 @@ const keyExtractor = (item) => item._id || item;
 export default function FavoritesScreen() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
-  const { favorites, loading, fetchFavorites } = useTrailStore();
+  const { favorites, fetchFavorites } = useTrailStore();
+  const [refreshing, setRefreshing] = useState(false);
 
+  // Re-fetch when user becomes available (handles auth init race condition)
   useEffect(() => {
     if (user) fetchFavorites();
   }, [user]);
 
-  const handleRefresh = useCallback(() => {
-    if (user) fetchFavorites();
+  // Re-fetch every time the tab is focused
+  useFocusEffect(
+    useCallback(() => {
+      if (user) fetchFavorites();
+    }, [user, fetchFavorites])
+  );
+
+  const handleRefresh = useCallback(async () => {
+    if (!user) return;
+    setRefreshing(true);
+    await fetchFavorites();
+    setRefreshing(false);
   }, [user, fetchFavorites]);
 
   if (!user) {
@@ -59,7 +71,7 @@ export default function FavoritesScreen() {
       initialNumToRender={6}
       refreshControl={
         <RefreshControl
-          refreshing={loading}
+          refreshing={refreshing}
           onRefresh={handleRefresh}
           tintColor={COLORS.tint}
           colors={[COLORS.tint]}

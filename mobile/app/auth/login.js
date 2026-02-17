@@ -94,6 +94,13 @@ export default function LoginScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
+          style={styles.forgotLink}
+          onPress={() => router.push('/auth/forgot-password')}
+        >
+          <Text style={styles.linkBold}>Forgot Password?</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={styles.linkRow}
           onPress={() => router.replace('/auth/register')}
         >
@@ -170,6 +177,10 @@ const styles = StyleSheet.create({
   btnText: {
     ...TYPOGRAPHY.headline,
     color: COLORS.white,
+  },
+  forgotLink: {
+    alignSelf: 'center',
+    marginTop: SPACING.xs,
   },
   linkRow: {
     flexDirection: 'row',

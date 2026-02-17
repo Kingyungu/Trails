@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,13 +12,26 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import useAuthStore from '../../store/authStore';
-import { uploadImage } from '../../services/api';
+import { uploadImage, getActivityStats } from '../../services/api';
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from '../../constants/theme';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, logout, update } = useAuthStore();
   const [uploading, setUploading] = useState(false);
+  const [stats, setStats] = useState(null);
+
+  const loadStats = useCallback(async () => {
+    if (!user) return;
+    try {
+      const { data } = await getActivityStats();
+      setStats(data);
+    } catch {
+      // silent
+    }
+  }, [user]);
+
+  useEffect(() => { loadStats(); }, [loadStats]);
 
   const handlePickAvatar = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -56,6 +69,14 @@ export default function ProfileScreen() {
         onPress: logout,
       },
     ]);
+  };
+
+  const formatTotalTime = (seconds) => {
+    if (!seconds) return '0h';
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    if (hrs > 0) return `${hrs}h ${mins}m`;
+    return `${mins}m`;
   };
 
   if (!user) {
@@ -107,19 +128,60 @@ export default function ProfileScreen() {
         </Text>
       </View>
 
-      {/* Quick stats */}
+      {/* Hiking Stats */}
       <View style={styles.statsCard}>
+        <View style={styles.statBox}>
+          <Text style={styles.statNum}>{stats?.totalHikes || 0}</Text>
+          <Text style={styles.statLabel}>Hikes</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statBox}>
+          <Text style={styles.statNum}>{stats?.totalDistance || 0}</Text>
+          <Text style={styles.statLabel}>km Total</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statBox}>
+          <Text style={styles.statNum}>{formatTotalTime(stats?.totalDuration)}</Text>
+          <Text style={styles.statLabel}>Time</Text>
+        </View>
+        <View style={styles.statDivider} />
         <View style={styles.statBox}>
           <Text style={styles.statNum}>{user.favorites?.length || 0}</Text>
           <Text style={styles.statLabel}>Saved</Text>
         </View>
       </View>
 
+      {/* Secondary stats row */}
+      {stats && stats.totalHikes > 0 && (
+        <View style={styles.secondaryStats}>
+          <View style={styles.secondaryStatItem}>
+            <Ionicons name="trending-up" size={16} color={COLORS.systemOrange} />
+            <Text style={styles.secondaryStatText}>
+              {stats.totalElevation || 0}m elevation gained
+            </Text>
+          </View>
+          <View style={styles.secondaryStatItem}>
+            <Ionicons name="speedometer" size={16} color={COLORS.systemBlue} />
+            <Text style={styles.secondaryStatText}>
+              {stats.avgSpeed} km/h avg speed
+            </Text>
+          </View>
+          <View style={styles.secondaryStatItem}>
+            <Ionicons name="trophy" size={16} color={COLORS.systemYellow} />
+            <Text style={styles.secondaryStatText}>
+              {stats.longestHike} km longest hike
+            </Text>
+          </View>
+        </View>
+      )}
+
       {/* Menu items */}
       <View style={styles.menuGroup}>
+        <MenuItem icon="footsteps" label="Activity History" onPress={() => router.push('/activity-history')} />
         <MenuItem icon="heart" label="Saved Trails" onPress={() => router.push('/favorites')} />
         <MenuItem icon="location" label="Track a Trail" onPress={() => router.push('/tracking')} />
-        <MenuItem icon="information-circle" label="About Trails" />
+        <MenuItem icon="settings-sharp" label="Settings" onPress={() => router.push('/settings')} />
+        <MenuItem icon="information-circle" label="About Trails" last />
       </View>
 
       {/* Destructive action - separate group */}
@@ -249,24 +311,47 @@ const styles = StyleSheet.create({
   },
   statsCard: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-around',
+    alignItems: 'center',
     backgroundColor: COLORS.secondarySystemGroupedBackground,
     marginHorizontal: SPACING.md,
     borderRadius: RADIUS.md,
     padding: SPACING.md,
-    gap: SPACING.xl,
   },
   statBox: {
     alignItems: 'center',
+    flex: 1,
+  },
+  statDivider: {
+    width: 1,
+    height: 32,
+    backgroundColor: COLORS.separator,
   },
   statNum: {
-    ...TYPOGRAPHY.title1,
+    ...TYPOGRAPHY.title2,
     color: COLORS.tint,
   },
   statLabel: {
     ...TYPOGRAPHY.footnote,
     color: COLORS.secondaryLabel,
     marginTop: 2,
+  },
+  secondaryStats: {
+    backgroundColor: COLORS.secondarySystemGroupedBackground,
+    marginHorizontal: SPACING.md,
+    marginTop: SPACING.sm,
+    borderRadius: RADIUS.md,
+    padding: SPACING.md,
+    gap: SPACING.sm,
+  },
+  secondaryStatItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  secondaryStatText: {
+    ...TYPOGRAPHY.subhead,
+    color: COLORS.secondaryLabel,
   },
   menuGroup: {
     backgroundColor: COLORS.secondarySystemGroupedBackground,

@@ -20,6 +20,8 @@ import PhotoGallery from '../../components/PhotoGallery';
 import ReviewCard from '../../components/ReviewCard';
 import ElevationProfile from '../../components/ElevationProfile';
 import OfflineDownloadButton from '../../components/OfflineDownloadButton';
+import WeatherWidget from '../../components/WeatherWidget';
+import ConditionReports from '../../components/ConditionReports';
 import useOfflineStore from '../../store/offlineStore';
 import { getReviews } from '../../services/api';
 import { formatDuration } from '../../services/location';
@@ -179,6 +181,13 @@ export default function TrailDetailScreen() {
           </View>
         )}
 
+        {/* Weather */}
+        <Text style={styles.sectionTitle}>Weather</Text>
+        <WeatherWidget lat={displayTrail.location.lat} lng={displayTrail.location.lng} />
+
+        {/* Trail Conditions */}
+        <ConditionReports trailId={displayTrail._id} trailName={displayTrail.name} />
+
         {/* Map */}
         <Text style={styles.sectionTitle}>Trail Map</Text>
         <TrailMapEnhanced
@@ -225,10 +234,10 @@ export default function TrailDetailScreen() {
         {/* Start Trail button */}
         <TouchableOpacity
           style={styles.startBtn}
-          onPress={() => router.push('/tracking')}
+          onPress={() => router.push(`/tracking?trailId=${displayTrail._id}`)}
         >
           <Ionicons name="navigate" size={20} color={COLORS.white} />
-          <Text style={styles.startBtnText}>Start Trail</Text>
+          <Text style={styles.startBtnText}>Navigate Trail</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

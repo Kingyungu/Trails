@@ -64,7 +64,9 @@ const useTrailStore = create((set, get) => ({
   toggleFav: async (trailId) => {
     try {
       const { data } = await toggleFavorite(trailId);
-      set({ favorites: data.favorites });
+      // Refetch populated trail objects so the favorites list stays correct
+      const { data: populated } = await getFavorites();
+      set({ favorites: populated });
       return data.isFavorite;
     } catch {
       return false;

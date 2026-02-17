@@ -9,6 +9,8 @@ const trailRoutes = require('./routes/trails');
 const reviewRoutes = require('./routes/reviews');
 const uploadRoutes = require('./routes/uploads');
 const poiRoutes = require('./routes/pois');
+const activityRoutes = require('./routes/activities');
+const conditionRoutes = require('./routes/conditions');
 
 const app = express();
 
@@ -23,6 +25,8 @@ app.use('/api/trails', trailRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/uploads', uploadRoutes);
 app.use('/api/pois', poiRoutes);
+app.use('/api/activities', activityRoutes);
+app.use('/api/conditions', conditionRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));

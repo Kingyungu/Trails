@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import * as Location from 'expo-location';
+import { saveActivity } from '../services/api';
 
 const useTrackingStore = create((set, get) => ({
   isTracking: false,
@@ -9,6 +10,24 @@ const useTrackingStore = create((set, get) => ({
   startTime: null,
   watchId: null,
   timer: null,
+  savedActivity: null,
+  waypoints: [], // [{ id, lat, lng, label, timestamp }]
+
+  dropWaypoint: (lat, lng, label) => {
+    const wp = {
+      id: Date.now().toString(),
+      lat,
+      lng,
+      label: label || `WP${get().waypoints.length + 1}`,
+      timestamp: Date.now(),
+    };
+    set((s) => ({ waypoints: [...s.waypoints, wp] }));
+    return wp;
+  },
+
+  removeWaypoint: (id) => {
+    set((s) => ({ waypoints: s.waypoints.filter((w) => w.id !== id) }));
+  },
 
   startTracking: async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -47,6 +66,7 @@ const useTrackingStore = create((set, get) => ({
       route: [],
       distance: 0,
       duration: 0,
+      savedActivity: null,
     });
     return true;
   },
@@ -56,6 +76,24 @@ const useTrackingStore = create((set, get) => ({
     if (watchId) watchId.remove();
     if (timer) clearInterval(timer);
     set({ isTracking: false, watchId: null, timer: null });
+  },
+
+  saveCompletedHike: async (trailId, trailName) => {
+    const { distance, duration, route, waypoints } = get();
+    try {
+      const { data } = await saveActivity({
+        trail: trailId || undefined,
+        trailName: trailName || 'Free Hike',
+        distance_km: distance,
+        duration_seconds: duration,
+        route,
+        waypoints,
+      });
+      set({ savedActivity: data });
+      return data;
+    } catch {
+      return null;
+    }
   },
 
   reset: () => {
@@ -70,6 +108,8 @@ const useTrackingStore = create((set, get) => ({
       startTime: null,
       watchId: null,
       timer: null,
+      savedActivity: null,
+      waypoints: [],
     });
   },
 }));
