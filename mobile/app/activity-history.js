@@ -12,6 +12,8 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { getActivities, deleteActivity } from '../services/api';
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from '../constants/theme';
+import useSubscriptionStore from '../store/subscriptionStore';
+import PremiumGate from '../components/PremiumGate';
 
 function formatDuration(seconds) {
   const hrs = Math.floor(seconds / 3600);
@@ -32,6 +34,7 @@ function formatDate(dateStr) {
 
 export default function ActivityHistoryScreen() {
   const router = useRouter();
+  const { subscribed, loading: subLoading } = useSubscriptionStore();
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -112,6 +115,10 @@ export default function ActivityHistoryScreen() {
       )}
     </View>
   );
+
+  if (!subLoading && !subscribed) {
+    return <PremiumGate feature="Activity History" />;
+  }
 
   if (loading) {
     return (

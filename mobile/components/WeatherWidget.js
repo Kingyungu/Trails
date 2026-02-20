@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from '../constants/theme';
+import useSubscriptionStore from '../store/subscriptionStore';
+import PremiumGate from './PremiumGate';
 
 const WEATHER_ICONS = {
   Clear: 'sunny',
@@ -28,14 +30,15 @@ const WEATHER_COLORS = {
 };
 
 export default function WeatherWidget({ lat, lng }) {
+  const { subscribed } = useSubscriptionStore();
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    if (!lat || !lng) return;
+    if (!lat || !lng || !subscribed) return;
     fetchWeather();
-  }, [lat, lng]);
+  }, [lat, lng, subscribed]);
 
   const fetchWeather = async () => {
     try {
@@ -64,6 +67,10 @@ export default function WeatherWidget({ lat, lng }) {
     }
     setLoading(false);
   };
+
+  if (!subscribed) {
+    return <PremiumGate feature="Weather Forecast" compact />;
+  }
 
   if (loading) {
     return (

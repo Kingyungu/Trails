@@ -1,6 +1,6 @@
 # Trails App — Feature Reference
 
-> Last updated: 2026-02-20
+> Last updated: 2026-02-20 (added Premium/Paywall + M-Pesa)
 > Stack: React Native (Expo) · Node.js/Express · MongoDB
 
 ---
@@ -10,6 +10,7 @@
 2. [Components](#components)
 3. [State Stores](#state-stores)
 4. [Server API](#server-api)
+5. [Premium & Payments](#premium--payments)
 5. [Data Models](#data-models)
 6. [Authentication](#authentication)
 7. [GPS Tracking & Navigation](#gps-tracking--navigation)
@@ -459,3 +460,63 @@ Calculated from Activity history:
 | OpenStreetMap / Overpass API | Nearby trail discovery |
 | Google Maps | "Get Directions" deep link |
 | Elevation API | Elevation profile generation |
+| Safaricom Daraja API | M-Pesa STK Push payments |
+
+---
+
+## Premium & Payments
+
+### Free Features
+- Browse all trails + trail detail pages
+- View reviews and condition reports
+- View POIs on map
+- Favorites / saved trails
+- User account and profile
+
+### Premium Features (Subscription Required)
+| Feature | Gated In |
+|---|---|
+| GPS Trail Tracking | `tracking.js` screen |
+| Turn-by-turn Navigation | `tracking.js` screen |
+| Activity History | `activity-history.js` screen |
+| Offline Map Downloads | `OfflineDownloadButton.js` component |
+| Elevation Profiles | `ElevationProfile.js` component |
+| Weather Forecasts | `WeatherWidget.js` component |
+| Write Reviews | `review/[trailId].js` screen |
+
+### Subscription Plans
+| Plan | Price | Duration |
+|---|---|---|
+| Monthly | KES 299 | 30 days |
+| Annual | KES 2,499 | 365 days (save 30%) |
+
+### M-Pesa Integration (Safaricom Daraja API)
+- **Flow**: User selects plan → enters Kenyan phone → STK Push sent → enters PIN → payment confirmed via callback
+- **STK Push**: `POST /api/payments/subscribe` → initiates Lipa Na M-Pesa Online payment
+- **Callback**: `POST /api/payments/mpesa/callback` → Safaricom confirms payment, activates subscription
+- **Polling**: `POST /api/payments/verify` — client polls every 4s (max 60s) to detect activation
+- **Environments**: Sandbox (default) → Production via `MPESA_ENV=production`
+
+### Server Files
+| File | Purpose |
+|---|---|
+| `server/models/Subscription.js` | Subscription document (user, plan, status, endDate, receipt) |
+| `server/services/mpesa.js` | Daraja API access token + STK Push |
+| `server/routes/payments.js` | `/subscription`, `/subscribe`, `/mpesa/callback`, `/verify` |
+
+### Mobile Files
+| File | Purpose |
+|---|---|
+| `mobile/store/subscriptionStore.js` | Subscription state (subscribed, plan, endDate) |
+| `mobile/components/PremiumGate.js` | Lock UI — full-screen or compact card variant |
+| `mobile/app/subscription.js` | Paywall screen: plan selection + M-Pesa payment flow |
+
+### Required Environment Variables (Server)
+```
+MPESA_CONSUMER_KEY=       # Daraja app consumer key
+MPESA_CONSUMER_SECRET=    # Daraja app consumer secret
+MPESA_SHORTCODE=          # Business shortcode (174379 for sandbox)
+MPESA_PASSKEY=            # Lipa Na M-Pesa passkey
+MPESA_CALLBACK_URL=       # Public HTTPS URL for payment callbacks
+MPESA_ENV=production      # Omit for sandbox
+```

@@ -15,10 +15,13 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { addReview, uploadImage } from '../../services/api';
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from '../../constants/theme';
+import useSubscriptionStore from '../../store/subscriptionStore';
+import PremiumGate from '../../components/PremiumGate';
 
 export default function WriteReviewScreen() {
   const { trailId } = useLocalSearchParams();
   const router = useRouter();
+  const { subscribed, loading: subLoading } = useSubscriptionStore();
   const [rating, setRating] = useState(0);
   const [text, setText] = useState('');
   const [photos, setPhotos] = useState([]);
@@ -65,6 +68,10 @@ export default function WriteReviewScreen() {
     }
     setLoading(false);
   };
+
+  if (!subLoading && !subscribed) {
+    return <PremiumGate feature="Write Reviews" />;
+  }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>

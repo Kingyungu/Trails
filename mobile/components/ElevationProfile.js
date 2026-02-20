@@ -20,18 +20,22 @@ import Svg, {
 import { Ionicons } from '@expo/vector-icons';
 import { getElevationProfile } from '../services/api';
 import { COLORS, SPACING, RADIUS, SHADOWS } from '../constants/theme';
+import useSubscriptionStore from '../store/subscriptionStore';
+import PremiumGate from './PremiumGate';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CHART_HEIGHT = 180;
 const CHART_PADDING = { top: 20, right: 16, bottom: 30, left: 45 };
 
 export default function ElevationProfile({ trailId }) {
+  const { subscribed } = useSubscriptionStore();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [touchX, setTouchX] = useState(null);
 
   useEffect(() => {
+    if (!subscribed) return;
     loadElevation();
   }, [trailId]);
 
@@ -47,6 +51,10 @@ export default function ElevationProfile({ trailId }) {
       setLoading(false);
     }
   };
+
+  if (!subscribed) {
+    return <PremiumGate feature="Elevation Profile" compact />;
+  }
 
   if (loading) {
     return (

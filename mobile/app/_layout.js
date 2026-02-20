@@ -5,6 +5,7 @@ import * as Sentry from '@sentry/react-native';
 import useAuthStore from '../store/authStore';
 import useOfflineStore from '../store/offlineStore';
 import useSettingsStore from '../store/settingsStore';
+import useSubscriptionStore from '../store/subscriptionStore';
 import { registerForPushNotifications } from '../services/notifications';
 import { COLORS } from '../constants/theme';
 
@@ -22,6 +23,8 @@ function RootLayout() {
   const initAuth = useAuthStore((s) => s.initialize);
   const initOffline = useOfflineStore((s) => s.initialize);
   const initSettings = useSettingsStore((s) => s.initialize);
+  const initSubscription = useSubscriptionStore((s) => s.initialize);
+  const user = useAuthStore((s) => s.user);
   const notifications = useSettingsStore((s) => s.notifications);
 
   useEffect(() => {
@@ -29,6 +32,11 @@ function RootLayout() {
     initOffline();
     initSettings();
   }, []);
+
+  // Re-initialize subscription whenever auth state changes
+  useEffect(() => {
+    initSubscription();
+  }, [user]);
 
   // Re-register push token whenever the user has notifications enabled
   // (handles app updates and token refreshes)
@@ -95,6 +103,14 @@ function RootLayout() {
         />
         <Stack.Screen name="privacy-policy" options={{ title: 'Privacy Policy' }} />
         <Stack.Screen name="terms" options={{ title: 'Terms of Service' }} />
+        <Stack.Screen
+          name="subscription"
+          options={{
+            title: 'Trails Premium',
+            presentation: 'modal',
+            headerStyle: { backgroundColor: COLORS.systemBackground },
+          }}
+        />
       </Stack>
     </>
   );

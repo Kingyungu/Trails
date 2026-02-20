@@ -18,6 +18,8 @@ import { Ionicons } from '@expo/vector-icons';
 import useTrackingStore from '../store/trackingStore';
 import useNavigationStore from '../store/navigationStore';
 import useAuthStore from '../store/authStore';
+import useSubscriptionStore from '../store/subscriptionStore';
+import PremiumGate from '../components/PremiumGate';
 import NavigationPanel from '../components/NavigationPanel';
 import TrackingPanel from '../components/TrackingPanel';
 import { getCurrentLocation } from '../services/location';
@@ -49,6 +51,7 @@ export default function TrackingScreen() {
   } = useNavigationStore();
 
   const user = useAuthStore((s) => s.user);
+  const { subscribed, loading: subLoading } = useSubscriptionStore();
   const mapRef = useRef(null);
 
   const [userLoc, setUserLoc] = useState(null);
@@ -202,6 +205,10 @@ export default function TrackingScreen() {
     : { latitude: -1.2921, longitude: 36.8219, latitudeDelta: 0.02, longitudeDelta: 0.02 };
 
   // ── Render ────────────────────────────────────────────────────────────────
+
+  if (!subLoading && !subscribed) {
+    return <PremiumGate feature="GPS Trail Tracking & Navigation" />;
+  }
 
   return (
     <View style={styles.container}>

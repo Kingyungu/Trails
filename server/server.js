@@ -18,6 +18,7 @@ const uploadRoutes = require('./routes/uploads');
 const poiRoutes = require('./routes/pois');
 const activityRoutes = require('./routes/activities');
 const conditionRoutes = require('./routes/conditions');
+const paymentRoutes = require('./routes/payments');
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.use('/api/uploads', uploadRoutes);
 app.use('/api/pois', poiRoutes);
 app.use('/api/activities', activityRoutes);
 app.use('/api/conditions', conditionRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));

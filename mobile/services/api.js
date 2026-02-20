@@ -87,6 +87,15 @@ export const getTrailConditions = (trailId) => api.get(`/conditions/${trailId}`)
 
 export const reportCondition = (data) => api.post('/conditions', data);
 
+// Payments / Subscription
+export const getSubscription = () => api.get('/payments/subscription');
+
+export const initiateSubscription = (phone, plan) =>
+  api.post('/payments/subscribe', { phone, plan });
+
+export const verifySubscription = (checkoutRequestId) =>
+  api.post('/payments/verify', { checkoutRequestId });
+
 // Uploads
 export const uploadImage = (formData) =>
   api.post('/uploads', formData, {

@@ -1,13 +1,20 @@
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import useOfflineStore from '../store/offlineStore';
+import useSubscriptionStore from '../store/subscriptionStore';
+import PremiumGate from './PremiumGate';
 import { COLORS, SPACING, RADIUS, SHADOWS } from '../constants/theme';
 
 export default function OfflineDownloadButton({ trail }) {
   const { isOffline, downloadTrail, removeTrail, downloadProgress, offlineTrails } =
     useOfflineStore();
+  const { subscribed, loading: subLoading } = useSubscriptionStore();
 
   if (!trail || !trail.coordinates?.length) return null;
+
+  if (!subLoading && !subscribed) {
+    return <PremiumGate feature="Offline Maps" compact />;
+  }
 
   const trailId = trail._id;
   const isDownloaded = isOffline(trailId);

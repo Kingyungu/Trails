@@ -12,12 +12,14 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import useAuthStore from '../../store/authStore';
+import useSubscriptionStore from '../../store/subscriptionStore';
 import { uploadImage, getActivityStats } from '../../services/api';
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from '../../constants/theme';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, logout, update } = useAuthStore();
+  const { subscribed, plan, endDate } = useSubscriptionStore();
   const [uploading, setUploading] = useState(false);
   const [stats, setStats] = useState(null);
 
@@ -127,6 +129,37 @@ export default function ProfileScreen() {
           Joined {new Date(user.created_at).toLocaleDateString('en-KE', { month: 'long', year: 'numeric' })}
         </Text>
       </View>
+
+      {/* Subscription status */}
+      {subscribed ? (
+        <View style={styles.subActiveBanner}>
+          <View style={styles.subActiveLeft}>
+            <Ionicons name="star" size={18} color="#F59E0B" />
+            <View>
+              <Text style={styles.subActiveTitle}>Trails Premium</Text>
+              {endDate && (
+                <Text style={styles.subActiveExpiry}>
+                  Renews {new Date(endDate).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </Text>
+              )}
+            </View>
+          </View>
+          <View style={styles.subActivePill}>
+            <Text style={styles.subActivePillText}>{plan === 'annual' ? 'Annual' : 'Monthly'}</Text>
+          </View>
+        </View>
+      ) : (
+        <TouchableOpacity style={styles.subUpgradeBanner} onPress={() => router.push('/subscription')}>
+          <View style={styles.subUpgradeLeft}>
+            <Ionicons name="star-outline" size={18} color={COLORS.primary} />
+            <View>
+              <Text style={styles.subUpgradeTitle}>Upgrade to Premium</Text>
+              <Text style={styles.subUpgradeSub}>Unlock tracking, offline maps & more</Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={COLORS.primary} />
+        </TouchableOpacity>
+      )}
 
       {/* Hiking Stats */}
       <View style={styles.statsCard}>
@@ -377,5 +410,71 @@ const styles = StyleSheet.create({
     flex: 1,
     ...TYPOGRAPHY.body,
     color: COLORS.label,
+  },
+  subActiveBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FEF9E7',
+    marginHorizontal: SPACING.md,
+    marginTop: SPACING.md,
+    borderRadius: RADIUS.md,
+    padding: SPACING.md,
+    borderWidth: 1,
+    borderColor: '#F59E0B40',
+  },
+  subActiveLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  subActiveTitle: {
+    ...TYPOGRAPHY.callout,
+    fontWeight: '700',
+    color: '#92400E',
+  },
+  subActiveExpiry: {
+    ...TYPOGRAPHY.caption1,
+    color: '#B45309',
+    marginTop: 1,
+  },
+  subActivePill: {
+    backgroundColor: '#F59E0B',
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 3,
+    borderRadius: RADIUS.full,
+  },
+  subActivePillText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  subUpgradeBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F0F9F4',
+    marginHorizontal: SPACING.md,
+    marginTop: SPACING.md,
+    borderRadius: RADIUS.md,
+    padding: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.primary + '30',
+  },
+  subUpgradeLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    flex: 1,
+  },
+  subUpgradeTitle: {
+    ...TYPOGRAPHY.callout,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  subUpgradeSub: {
+    ...TYPOGRAPHY.caption1,
+    color: COLORS.textLight,
+    marginTop: 1,
   },
 });
