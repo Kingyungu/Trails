@@ -9,6 +9,7 @@ import {
   Alert,
   TextInput,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,6 +17,10 @@ import useAuthStore from '../store/authStore';
 import useSettingsStore from '../store/settingsStore';
 import useOfflineStore from '../store/offlineStore';
 import { changePassword, deleteAccount } from '../services/api';
+import {
+  registerForPushNotifications,
+  unregisterPushNotifications,
+} from '../services/notifications';
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from '../constants/theme';
 
 const MAP_TYPES = [
@@ -199,7 +204,25 @@ export default function SettingsScreen() {
           <Text style={[styles.rowLabel, { flex: 1 }]}>Notifications</Text>
           <Switch
             value={notifications}
-            onValueChange={(v) => setSetting('notifications', v)}
+            onValueChange={async (enabled) => {
+              if (enabled) {
+                const granted = await registerForPushNotifications();
+                if (!granted) {
+                  Alert.alert(
+                    'Permission Denied',
+                    'Enable notifications in your device Settings to receive trail alerts.',
+                    [
+                      { text: 'Cancel', style: 'cancel' },
+                      { text: 'Open Settings', onPress: () => Linking.openSettings() },
+                    ]
+                  );
+                  return;
+                }
+              } else {
+                await unregisterPushNotifications();
+              }
+              setSetting('notifications', enabled);
+            }}
             trackColor={{ true: COLORS.tint }}
           />
         </View>
@@ -354,6 +377,35 @@ export default function SettingsScreen() {
           </View>
         </>
       )}
+
+      {/* ── Legal ── */}
+      <Text style={styles.sectionHeader}>LEGAL</Text>
+
+      <View style={styles.group}>
+        <TouchableOpacity
+          style={styles.row}
+          onPress={() => router.push('/privacy-policy')}
+        >
+          <View style={styles.rowIcon}>
+            <Ionicons name="document-text-outline" size={20} color={COLORS.systemBlue} />
+          </View>
+          <Text style={styles.rowLabel}>Privacy Policy</Text>
+          <Ionicons name="chevron-forward" size={18} color={COLORS.tertiaryLabel} />
+        </TouchableOpacity>
+
+        <View style={styles.separator} />
+
+        <TouchableOpacity
+          style={[styles.row, styles.rowLast]}
+          onPress={() => router.push('/terms')}
+        >
+          <View style={styles.rowIcon}>
+            <Ionicons name="reader-outline" size={20} color={COLORS.systemBlue} />
+          </View>
+          <Text style={styles.rowLabel}>Terms of Service</Text>
+          <Ionicons name="chevron-forward" size={18} color={COLORS.tertiaryLabel} />
+        </TouchableOpacity>
+      </View>
 
       <Text style={styles.footer}>Trails v1.0.0</Text>
     </ScrollView>

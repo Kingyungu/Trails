@@ -27,6 +27,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Discover',
+          headerShown: false,
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? 'compass' : 'compass-outline'} size={size} color={color} />
           ),

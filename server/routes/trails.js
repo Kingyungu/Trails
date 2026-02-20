@@ -40,8 +40,8 @@ router.get('/', async (req, res) => {
       pages: Math.ceil(total / Number(limit)),
       total,
     });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch {
+    res.status(500).json({ message: 'An error occurred. Please try again.' });
   }
 });
 
@@ -50,8 +50,8 @@ router.get('/regions', async (req, res) => {
   try {
     const regions = await Trail.distinct('region');
     res.json(regions);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch {
+    res.status(500).json({ message: 'An error occurred. Please try again.' });
   }
 });
 
@@ -106,8 +106,8 @@ router.get('/nearby', async (req, res) => {
       app_trails: nearbyDbTrails,
       osm_trails: osmTrails,
     });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch {
+    res.status(500).json({ message: 'An error occurred. Please try again.' });
   }
 });
 
@@ -116,8 +116,8 @@ router.get('/user/favorites', auth, async (req, res) => {
   try {
     const user = await req.user.populate('favorites');
     res.json(user.favorites.filter(Boolean));
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch {
+    res.status(500).json({ message: 'An error occurred. Please try again.' });
   }
 });
 
@@ -153,8 +153,8 @@ router.get('/:id/elevation', async (req, res) => {
     await trail.save();
 
     res.json(elevationData);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch {
+    res.status(500).json({ message: 'An error occurred. Please try again.' });
   }
 });
 
@@ -164,8 +164,8 @@ router.get('/:id', async (req, res) => {
     const trail = await Trail.findById(req.params.id);
     if (!trail) return res.status(404).json({ message: 'Trail not found' });
     res.json(trail);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch {
+    res.status(500).json({ message: 'An error occurred. Please try again.' });
   }
 });
 
@@ -183,8 +183,8 @@ router.post('/:id/favorite', auth, async (req, res) => {
     }
     await user.save();
     res.json({ favorites: user.favorites, isFavorite: index === -1 });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch {
+    res.status(500).json({ message: 'An error occurred. Please try again.' });
   }
 });
 

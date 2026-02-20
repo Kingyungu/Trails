@@ -44,6 +44,12 @@ export const forgotPassword = (email) =>
 export const resetPassword = (email, code, newPassword) =>
   api.post('/auth/reset-password', { email, code, newPassword });
 
+export const registerPushToken = (token) =>
+  api.post('/auth/push-token', { token });
+
+export const removePushToken = (token) =>
+  api.delete('/auth/push-token', { data: { token } });
+
 // Trails
 export const getTrails = (params) => api.get('/trails', { params });
 

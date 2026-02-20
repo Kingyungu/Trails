@@ -12,8 +12,8 @@ router.get('/:trailId', async (req, res) => {
       .populate('user', 'name avatar')
       .sort({ created_at: -1 });
     res.json(reviews);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch {
+    res.status(500).json({ message: 'Could not fetch reviews. Please try again.' });
   }
 });
 
@@ -40,8 +40,8 @@ router.post('/', auth, async (req, res) => {
 
     const populated = await review.populate('user', 'name avatar');
     res.status(201).json(populated);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch {
+    res.status(500).json({ message: 'An error occurred. Please try again.' });
   }
 });
 

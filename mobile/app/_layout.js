@@ -1,21 +1,42 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import * as Sentry from '@sentry/react-native';
 import useAuthStore from '../store/authStore';
 import useOfflineStore from '../store/offlineStore';
 import useSettingsStore from '../store/settingsStore';
+import { registerForPushNotifications } from '../services/notifications';
 import { COLORS } from '../constants/theme';
 
-export default function RootLayout() {
+const sentryEnabled = !!process.env.EXPO_PUBLIC_SENTRY_DSN;
+
+if (sentryEnabled) {
+  Sentry.init({
+    dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+    tracesSampleRate: 0.2,
+    enableNative: true,
+  });
+}
+
+function RootLayout() {
   const initAuth = useAuthStore((s) => s.initialize);
   const initOffline = useOfflineStore((s) => s.initialize);
   const initSettings = useSettingsStore((s) => s.initialize);
+  const notifications = useSettingsStore((s) => s.notifications);
 
   useEffect(() => {
     initAuth();
     initOffline();
     initSettings();
   }, []);
+
+  // Re-register push token whenever the user has notifications enabled
+  // (handles app updates and token refreshes)
+  useEffect(() => {
+    if (notifications) {
+      registerForPushNotifications();
+    }
+  }, [notifications]);
 
   return (
     <>
@@ -72,7 +93,11 @@ export default function RootLayout() {
           name="activity-history"
           options={{ title: 'Activity History' }}
         />
+        <Stack.Screen name="privacy-policy" options={{ title: 'Privacy Policy' }} />
+        <Stack.Screen name="terms" options={{ title: 'Terms of Service' }} />
       </Stack>
     </>
   );
 }
+
+export default sentryEnabled ? Sentry.wrap(RootLayout) : RootLayout;

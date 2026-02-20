@@ -30,8 +30,8 @@ router.post('/', auth, async (req, res) => {
     });
 
     res.status(201).json(activity);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch {
+    res.status(500).json({ message: 'Could not save activity. Please try again.' });
   }
 });
 
@@ -51,8 +51,8 @@ router.get('/', auth, async (req, res) => {
     ]);
 
     res.json({ activities, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch {
+    res.status(500).json({ message: 'An error occurred. Please try again.' });
   }
 });
 
@@ -88,8 +88,8 @@ router.get('/stats', auth, async (req, res) => {
     result.longestHike = Math.round((result.longestHike || 0) * 100) / 100;
 
     res.json(result);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch {
+    res.status(500).json({ message: 'An error occurred. Please try again.' });
   }
 });
 
@@ -100,8 +100,8 @@ router.delete('/:id', auth, async (req, res) => {
     if (!activity) return res.status(404).json({ message: 'Activity not found' });
     await activity.deleteOne();
     res.json({ message: 'Activity deleted' });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch {
+    res.status(500).json({ message: 'An error occurred. Please try again.' });
   }
 });
 

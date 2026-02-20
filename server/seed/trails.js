@@ -43,7 +43,7 @@ const trails = [
       { lat: -0.1549809, lng: 37.3175448 }, { lat: -0.1548877, lng: 37.3175218 }, { lat: -0.1548388, lng: 37.3175559 },
     ],
     images: [
-      'https://images.unsplash.com/photo-1621414050946-1b936a364e84?w=800',
+      'https://images.unsplash.com/photo-aRVZeqHIixc?w=800',
       'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
       'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800',
       'https://images.unsplash.com/photo-1551632811-561732d1e306?w=800',
@@ -365,7 +365,7 @@ const trails = [
       { lat: -2.5333, lng: 37.8833 },
     ],
     images: [
-      'https://images.unsplash.com/photo-1500534314263-e7bc25906369?w=800',
+      'https://images.unsplash.com/photo-8sFgOA-dhWI?w=800',
       'https://images.unsplash.com/photo-1473773508845-188df298d2d1?w=800',
       'https://images.unsplash.com/photo-1484318571209-661cf29a69d8?w=800',
       'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800',
@@ -461,7 +461,7 @@ const trails = [
       { lat: 0.0500, lng: 36.3667 },
     ],
     images: [
-      'https://images.unsplash.com/photo-1432405972618-c6b0cfba8673?w=800',
+      'https://images.unsplash.com/photo-avphYyMy0T8?w=800',
       'https://images.unsplash.com/photo-1498855926480-d98e83099315?w=800',
       'https://images.unsplash.com/photo-1520271348391-049dd132bb7c?w=800',
       'https://images.unsplash.com/photo-1448375240586-882707db888b?w=800',

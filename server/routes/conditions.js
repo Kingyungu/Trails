@@ -28,8 +28,8 @@ router.get('/:trailId', async (req, res) => {
       summary: summary ? { status: summary[0], count: summary[1] } : null,
       totalReports: reports.length,
     });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch {
+    res.status(500).json({ message: 'Could not fetch condition reports. Please try again.' });
   }
 });
 
@@ -67,8 +67,8 @@ router.post('/', auth, async (req, res) => {
 
     const populated = await report.populate('user', 'name avatar');
     res.status(201).json(populated);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch {
+    res.status(500).json({ message: 'An error occurred. Please try again.' });
   }
 });
 

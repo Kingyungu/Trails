@@ -107,11 +107,20 @@ async function getNearbyOsmTrails(lat, lng, radiusKm = 10) {
   const radiusMeters = radiusKm * 1000;
   const query = buildOverpassQuery(lat, lng, radiusMeters);
 
-  const response = await fetch(OVERPASS_URL, {
-    method: 'POST',
-    body: `data=${encodeURIComponent(query)}`,
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30_000); // 30 s hard timeout
+
+  let response;
+  try {
+    response = await fetch(OVERPASS_URL, {
+      method: 'POST',
+      body: `data=${encodeURIComponent(query)}`,
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timer);
+  }
 
   if (!response.ok) {
     throw new Error(`Overpass API error: ${response.status}`);

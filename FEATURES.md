@@ -1,6 +1,6 @@
 # Trails App — Feature Reference
 
-> Last updated: 2026-02-17
+> Last updated: 2026-02-20
 > Stack: React Native (Expo) · Node.js/Express · MongoDB
 
 ---
@@ -111,13 +111,20 @@
 #### Settings (`settings.js`)
 - Distance units: km / mi
 - Map type: Standard / Satellite / Terrain
-- Notifications toggle
+- Notifications toggle — requests OS permission, registers/removes Expo push token
 - Clear offline cache (shows cached trail count)
 - Reset all settings to defaults
 - Edit display name inline
 - Change password (local accounts only)
 - Delete account (destructive, requires confirmation)
 - App version display (v1.0.0)
+- Links to Privacy Policy and Terms of Service screens
+
+#### Privacy Policy (`privacy-policy.js`)
+- Scrollable in-app privacy policy screen
+
+#### Terms of Service (`terms.js`)
+- Scrollable in-app terms of service screen
 
 #### Forgot Password (`auth/forgot-password.js`)
 - Step 1: Enter email → receive reset code
@@ -308,8 +315,17 @@ Base URL: `/api`
 | Local auth | Email + password, bcrypt hashing, JWT (30-day expiry) |
 | Social login | Google + Apple OAuth — auto-creates account if new |
 | Session restore | JWT stored in Expo Secure Store, loaded on app launch |
-| Password reset | 8-digit code via email, 15-min validity, 2-step flow |
+| Password reset | 8-digit code sent via email (Nodemailer), 15-min validity, 2-step flow |
 | Account deletion | Removes all user data from DB |
+| Push token management | Device token stored on User document; registered/removed on notification toggle |
+
+### Security
+| Control | Details |
+|---|---|
+| Rate limiting | 10 login attempts per 15 min; 5 registrations per hour; 5 reset requests per hour |
+| CORS | Restricted to `ALLOWED_ORIGINS` env var in production |
+| Helmet | HTTP security headers on all responses |
+| Error sanitisation | Raw error messages never exposed to clients |
 
 ---
 
@@ -420,6 +436,9 @@ Calculated from Activity history:
 | Expo Image Picker | Avatar + photo upload |
 | Expo Secure Store | Encrypted token storage |
 | AsyncStorage | Settings persistence |
+| expo-notifications | Push notification registration + handling |
+| expo-updates | OTA JS updates without app store review |
+| @sentry/react-native | Crash reporting (optional) |
 
 ### Server
 | Tool | Purpose |
@@ -428,6 +447,11 @@ Calculated from Activity history:
 | MongoDB + Mongoose | Database + ODM |
 | JWT | Authentication tokens |
 | Bcryptjs | Password hashing |
+| Helmet | HTTP security headers |
+| express-rate-limit | Brute-force protection on auth endpoints |
+| Morgan | HTTP request logging |
+| Nodemailer | Transactional email (password reset) |
+| @sentry/node | Server-side error tracking (optional) |
 
 ### External Services
 | Service | Used For |

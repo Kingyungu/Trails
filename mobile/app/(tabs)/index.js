@@ -8,6 +8,8 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import useTrailStore from '../../store/trailStore';
 import TrailCard from '../../components/TrailCard';
@@ -15,7 +17,12 @@ import SearchBar from '../../components/SearchBar';
 import NearbyTrails from '../../components/NearbyTrails';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../constants/theme';
 
-const renderItem = ({ item }) => <TrailCard trail={item} />;
+const renderItem = ({ item }) => (
+  <View style={styles.cardWrapper}>
+    <TrailCard trail={item} />
+  </View>
+);
+
 const keyExtractor = (item) => item._id;
 
 export default function HomeScreen() {
@@ -46,23 +53,51 @@ export default function HomeScreen() {
     fetchTrails(true);
   }, [fetchTrails]);
 
-  // Top rated trails (first 5)
   const topTrails = useMemo(() => trails.slice(0, 5), [trails]);
 
   const listHeader = useMemo(
     () => (
       <View>
-        <SearchBar onSearch={handleSearch} regions={regions} onFilter={handleFilter} currentFilters={filters} />
+        {/* Hero Banner */}
+        <LinearGradient
+          colors={['#1B4332', '#2D6A4F', '#40916C']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.hero}
+        >
+          <SafeAreaView edges={['top']}>
+            <View style={styles.heroContent}>
+              <View>
+                <Text style={styles.heroTitle}>Discover</Text>
+                <Text style={styles.heroSub}>Find your next adventure</Text>
+              </View>
+              <Ionicons name="compass" size={38} color="rgba(255,255,255,0.4)" />
+            </View>
+          </SafeAreaView>
+        </LinearGradient>
+
+        <SearchBar
+          onSearch={handleSearch}
+          regions={regions}
+          onFilter={handleFilter}
+          currentFilters={filters}
+        />
 
         {/* Nearby Trails */}
-        <View style={{ marginTop: SPACING.lg }}>
+        <View style={styles.nearbySection}>
           <NearbyTrails />
         </View>
 
-        {/* Featured horizontal scroll */}
+        {/* Top Rated horizontal scroll */}
         {topTrails.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Top Rated</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Top Rated</Text>
+              <View style={styles.sectionPill}>
+                <Ionicons name="star" size={11} color={COLORS.star} />
+                <Text style={styles.sectionPillText}>Best picks</Text>
+              </View>
+            </View>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -75,12 +110,18 @@ export default function HomeScreen() {
           </View>
         )}
 
+        {/* All Trails header */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>All Trails</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>All Trails</Text>
+            {trails.length > 0 && (
+              <Text style={styles.trailCount}>{trails.length} trails</Text>
+            )}
+          </View>
         </View>
       </View>
     ),
-    [topTrails, regions, filters, handleSearch, handleFilter]
+    [topTrails, trails.length, regions, filters, handleSearch, handleFilter]
   );
 
   const listEmpty = useMemo(
@@ -130,17 +171,65 @@ const styles = StyleSheet.create({
   list: {
     paddingBottom: 100,
   },
+  hero: {
+    paddingBottom: SPACING.xl,
+  },
+  heroContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.md,
+  },
+  heroTitle: {
+    ...TYPOGRAPHY.largeTitle,
+    color: COLORS.white,
+  },
+  heroSub: {
+    ...TYPOGRAPHY.subhead,
+    color: 'rgba(255,255,255,0.75)',
+    marginTop: 2,
+  },
+  nearbySection: {
+    marginTop: SPACING.md,
+  },
   section: {
     paddingHorizontal: SPACING.md,
     marginTop: SPACING.lg,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: SPACING.md,
+  },
   sectionTitle: {
     ...TYPOGRAPHY.title3,
     color: COLORS.label,
-    marginBottom: SPACING.md,
+  },
+  sectionPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: COLORS.systemGray6,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  sectionPillText: {
+    ...TYPOGRAPHY.caption1,
+    fontWeight: '600',
+    color: COLORS.systemGray,
+  },
+  trailCount: {
+    ...TYPOGRAPHY.footnote,
+    color: COLORS.secondaryLabel,
   },
   featuredList: {
     paddingRight: SPACING.md,
+  },
+  cardWrapper: {
+    marginHorizontal: SPACING.md,
   },
   empty: {
     alignItems: 'center',

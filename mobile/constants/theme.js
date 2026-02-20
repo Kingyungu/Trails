@@ -46,6 +46,8 @@ export const COLORS = {
 
   // Aliases (used by components with generic naming)
   primary: '#2D6A4F',
+  primaryLight: '#52B788',
+  accent: '#40916C',
   text: '#000000',
   textSecondary: '#3C3C4399',
   textLight: '#8E8E93',
@@ -53,6 +55,7 @@ export const COLORS = {
   border: '#E5E5EA',
   success: '#34C759',
   error: '#FF3B30',
+  star: '#FFCC00',
 
   // Essentials
   white: '#FFFFFF',

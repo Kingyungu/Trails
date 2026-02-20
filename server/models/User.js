@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema({
   favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Trail' }],
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Date },
+  pushTokens: { type: [String], default: [] },
   created_at: { type: Date, default: Date.now },
 });
 

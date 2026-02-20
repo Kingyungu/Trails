@@ -46,7 +46,7 @@ export default memo(function NearbyTrails() {
   if (locationError) {
     return (
       <View style={styles.container}>
-        <Text style={styles.sectionTitle}>Nearby Trails</Text>
+        <Text style={[styles.sectionTitle, styles.sectionTitlePadded]}>Nearby Trails</Text>
         <View style={styles.emptyState}>
           <Ionicons name="location-outline" size={28} color={COLORS.textLight} />
           <Text style={styles.emptyText}>Enable location to see nearby trails</Text>
@@ -58,7 +58,7 @@ export default memo(function NearbyTrails() {
   if (nearbyLoading && !loaded) {
     return (
       <View style={styles.container}>
-        <Text style={styles.sectionTitle}>Nearby Trails</Text>
+        <Text style={[styles.sectionTitle, styles.sectionTitlePadded]}>Nearby Trails</Text>
         <View style={styles.loadingRow}>
           <ActivityIndicator size="small" color={COLORS.primary} />
           <Text style={styles.loadingText}>Finding trails near you...</Text>
@@ -72,7 +72,7 @@ export default memo(function NearbyTrails() {
   if (allTrails.length === 0 && loaded) {
     return (
       <View style={styles.container}>
-        <Text style={styles.sectionTitle}>Nearby Trails</Text>
+        <Text style={[styles.sectionTitle, styles.sectionTitlePadded]}>Nearby Trails</Text>
         <View style={styles.emptyState}>
           <Ionicons name="trail-sign-outline" size={28} color={COLORS.textLight} />
           <Text style={styles.emptyText}>No trails found nearby</Text>
@@ -184,6 +184,8 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     color: COLORS.text,
+  },
+  sectionTitlePadded: {
     paddingHorizontal: SPACING.lg,
     marginBottom: SPACING.md,
   },
